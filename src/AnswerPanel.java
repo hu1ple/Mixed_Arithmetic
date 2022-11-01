@@ -1,9 +1,7 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -14,6 +12,7 @@ public class AnswerPanel  extends JPanel implements ActionListener {
     private FillBlank_Questions[] Questions;
     private int NumOfCorrect;
     private int score;
+    private String ID;
     private Box VBox;
     private JButton bt_ok;
     private JButton bt_back;
@@ -24,7 +23,8 @@ public class AnswerPanel  extends JPanel implements ActionListener {
 
 
     public AnswerPanel(int range, int OperandsNum, boolean isFractionAllowed,
-                       boolean isParenthesesAllowed, int type[], SystemFrame systemFrame) {
+                       boolean isParenthesesAllowed, int type[], SystemFrame systemFrame,String ID) {
+        this.ID = ID;
         this.systemFrame = systemFrame;                         //初始化题目设置
         this.VBox = Box.createVerticalBox();
         index = -1;
@@ -135,16 +135,9 @@ public class AnswerPanel  extends JPanel implements ActionListener {
            // this.setVisible(false);
             int i;
             for (i = index - index % 10 - 10; i < index - index % 10; i++) {
-                //this.VBox.add(Questions[i].gethBox());
                 Questions[i].gethBox().setVisible(true);
             }
             index = i-1;
-         //   this.VBox.add(bt_ok);
-          //  this.VBox.add(bt_back);
-          //  this.VBox.add(bt_showLast);
-          //  this.VBox.add(bt_showNext);
-          //  this.add(VBox);
-           // this.setVisible(true);
 
         }
     }
@@ -164,7 +157,7 @@ public class AnswerPanel  extends JPanel implements ActionListener {
             systemFrame.getMainPanel().setVisible(true);      //打开答题panel
         } else if (e.getActionCommand().equals("ok")) {
             if(NumOfCorrect!=0) {
-                showWarningDialog("请不要重复提交!");
+                showResultDialog("请不要重复提交!");
                 return ;
             }
             NumOfCorrect = 0;
@@ -175,26 +168,26 @@ public class AnswerPanel  extends JPanel implements ActionListener {
             String Analysis ="本次训练共"+Integer.toString(Questions.length)+"道题\n"+
                     "你共做对了"+Integer.toString(NumOfCorrect)+"道题\n"+
                     "你的得分为:"+Integer.toString(100*NumOfCorrect/Questions.length);
-            showWarningDialog(Analysis);
+            showResultDialog(Analysis);
             refresh();
         } else if (e.getActionCommand().equals("next")) {
             try {
                 showNextGroup();
             } catch (MyException ex) {
-                showWarningDialog(ex.getMessage());
+                showResultDialog(ex.getMessage());
                 ex.printStackTrace();
             }
         } else if (e.getActionCommand().equals("last")) {
             try {
                 showLastGroup();
             } catch (MyException ex) {
-                showWarningDialog(ex.getMessage());
+                showResultDialog(ex.getMessage());
                 ex.printStackTrace();
             }
         }
         else if(e.getActionCommand().equals("file")){
             if(NumOfCorrect == 0){
-                showWarningDialog("你还没有进行提交");
+                showResultDialog("你还没有进行提交");
                 return ;
             }
             try{
@@ -202,15 +195,14 @@ public class AnswerPanel  extends JPanel implements ActionListener {
 
                 SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
                 String time = String.valueOf(formatter.format(date));
-               // System.out.println(time);
-                FileWriter fileWriter = new FileWriter("Exercise Records.txt",true);
+                FileWriter fileWriter = new FileWriter(ID+"_Exercises.txt",true);
                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
                 bufferedWriter.write("\n\n*********************新的一轮训练开始:"+time+"*************"+"\n");
                 bufferedWriter.close();
                 fileWriter.close();
                 for(int i=0;i< Questions.length;i++)
-                    Questions[i].OutputToFile("Exercise Records.txt");
-                fileWriter = new FileWriter("Exercise Records.txt",true);
+                    Questions[i].OutputToFile(ID+"_Exercises.txt");
+                fileWriter = new FileWriter(ID+"_Exercises.txt",true);
                 bufferedWriter = new BufferedWriter(fileWriter);
                 String Analysis = "本次训练共"+Integer.toString(Questions.length) +"道题\n"
                                 +"您共答对了"+Integer.toString(NumOfCorrect)+"道题\n"
@@ -221,14 +213,14 @@ public class AnswerPanel  extends JPanel implements ActionListener {
                 bufferedWriter.close();
                 fileWriter.close();
 
-                fileWriter =new FileWriter("record.txt",true);
+                fileWriter =new FileWriter(ID+"_record.txt",true);
                 bufferedWriter=new BufferedWriter(fileWriter);
                 bufferedWriter.write(time+":"+Integer.toString(100*NumOfCorrect/Questions.length)+"\n");
                 bufferedWriter.close();
                 fileWriter.close();
-                showWarningDialog("训练记录保存成功！");
+                showResultDialog("训练记录保存成功！");
             } catch (MyException ex) {
-                showWarningDialog(ex.getMessage());
+                showResultDialog(ex.getMessage());
                 ex.printStackTrace();
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -237,8 +229,8 @@ public class AnswerPanel  extends JPanel implements ActionListener {
     }
 
 
-    private void showWarningDialog(String message) {
-        final JDialog dialog = new JDialog(systemFrame, "警告", true);
+    private void showResultDialog(String message) {
+        final JDialog dialog = new JDialog(systemFrame, "结果", true);
         // 设置对话框的宽高
         dialog.setSize(300, 150);
         // 设置对话框大小不可改变
@@ -247,8 +239,9 @@ public class AnswerPanel  extends JPanel implements ActionListener {
         dialog.setLocationRelativeTo(systemFrame);
 
         // 创建一个标签显示消息内容
-        JLabel messageLabel = new JLabel(message);
-
+        //JLabel messageLabel = new JLabel(message);
+        JTextArea textArea = new JTextArea(message);
+        textArea.setEditable(false);
         // 创建一个按钮用于关闭对话框
         JButton okBtn = new JButton("确定");
         okBtn.addActionListener(new ActionListener() {
@@ -261,7 +254,7 @@ public class AnswerPanel  extends JPanel implements ActionListener {
         JPanel panel = new JPanel();
 
         // 添加组件到面板
-        panel.add(messageLabel);
+        panel.add(textArea);
         panel.add(okBtn);
 
         // 设置对话框的内容面板

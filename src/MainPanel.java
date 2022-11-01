@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -13,6 +12,9 @@ public class MainPanel extends JPanel  implements ActionListener {
     private JLabel label_welcome;
     private JLabel label_cfg;
     private JLabel[] labels ;
+    private JLabel label_id;
+    private JTextField tf_id;
+    private JButton bt_id;
     private JRadioButton[] radioBt_range;//选择运算范围
     private JRadioButton[] radioBt_Fraction;//是否带小数
     private JRadioButton[] radioBt_Parentheses;//是否带括号单选框
@@ -29,6 +31,7 @@ public class MainPanel extends JPanel  implements ActionListener {
     private int OperandsNum = 0;            //运算数个数
     private int type[];                   //题目类型，1表示填空题，2表示选择题，3表示判断题
     private boolean isParenthesesAllowed;//是否允许括号;
+    private String ID ="";
 
     public MainPanel(SystemFrame systemFrame){
         this.systemFrame = systemFrame;
@@ -39,7 +42,8 @@ public class MainPanel extends JPanel  implements ActionListener {
         bt_exit.setActionCommand("EXIT");
         bt_viewHistory.addActionListener(this);
         bt_viewHistory.setActionCommand("VIEW");
-
+        bt_id.addActionListener(this);
+        bt_id.setActionCommand("ID");
     }
 
     @Override
@@ -47,8 +51,9 @@ public class MainPanel extends JPanel  implements ActionListener {
         if(e.getActionCommand().equals("OK")){
 
             try {
+                if(ID.equals("")) throw new MyException("您还没有登录");
                 getConfig();
-                systemFrame.setAnswerPanel(range,OperandsNum,isFractionAllowed,isParenthesesAllowed,type); //将用户设置传递到answerPanel中，方法是将参数传给SystemFrame
+                systemFrame.setAnswerPanel(range,OperandsNum,isFractionAllowed,isParenthesesAllowed,type,ID); //将用户设置传递到answerPanel中，方法是将参数传给SystemFrame
                 System.out.println("确认设置");                                                             //由SystemFrame调用AnswerPanel的构造方法
                 systemFrame.getMainPanel().setEnabled(false);       //界面切换，关闭本panel
                 systemFrame.getMainPanel().setVisible(false);
@@ -67,6 +72,15 @@ public class MainPanel extends JPanel  implements ActionListener {
                 showHistoryDialog();
             } catch (MyException ex) {
                 showWarningDialog(ex.getMessage());
+            }
+        }
+        else if(e.getActionCommand().equals("ID")){
+            String getID = tf_id.getText();
+            if(getID.equals("") )
+                showWarningDialog("用户名不能为空");
+            else {
+                ID = getID;
+                showWarningDialog("欢迎您，"+ ID +"\n");
             }
         }
     }
@@ -121,12 +135,17 @@ public class MainPanel extends JPanel  implements ActionListener {
 
         Font f1 = new Font("宋体",Font.PLAIN,20);
         InitGlobalFont(f1);
+        Font f2 = new Font("楷体",Font.PLAIN,30);
+
+        label_id = new JLabel("用户名:");
+        tf_id = new JTextField(20);
+        bt_id = new JButton("登录");
         this.label_welcome = new JLabel("欢迎使用混合运算自测系统");
-       // label_welcome.setFont(f1);
+        label_welcome.setFont(f2);
         this.label_cfg = new JLabel("训练设置");
         this.labels = new JLabel[]{
-                new JLabel("运算范围"), new JLabel("运算数个数"), new JLabel("是否带小数"),
-                new JLabel("是否带括号"), new JLabel("题型与题量")
+                new JLabel("运算范围  :"), new JLabel("运算数个数:"), new JLabel("是否带小数:"),
+                new JLabel("是否带括号:"), new JLabel("题型与题量:")
         };
         this.radioBt_range = new JRadioButton[]{                            //设置三个可选运算范围
                 new JRadioButton("10以内"),
@@ -175,13 +194,18 @@ public class MainPanel extends JPanel  implements ActionListener {
 
 
     }
-    private void addToBoxLayout(){                  //将所有部件添加到箱式布局中
+    private void addToBoxLayout(){
+
+        //将所有部件添加到箱式布局中
         Box BigBox = Box.createVerticalBox();
         //Box vBox =Box.createVerticalBox();
         Box[] hBox = new Box[]{
                 Box.createHorizontalBox(),Box.createHorizontalBox(),Box.createHorizontalBox(),
                 Box.createHorizontalBox(),Box.createHorizontalBox(),Box.createHorizontalBox()
         };
+
+        Box accountBox  = Box.createHorizontalBox();
+        accountBox.add(label_id);accountBox.add(tf_id);accountBox.add(Box.createHorizontalStrut(80));
         for(int i=0;i<labels.length;i++){
             hBox[i].add(labels[i]);
         }
@@ -193,6 +217,8 @@ public class MainPanel extends JPanel  implements ActionListener {
                 hBox[2].add(radioBt_Fraction[i]);
         for(int i=0;i<radioBt_Parentheses.length;i++)
                 hBox[3].add(radioBt_Parentheses[i]);
+        for(int i=0;i<4;i++)
+                hBox[i].add(Box.createHorizontalGlue());
         Box[] miniHBox = new Box[]{Box.createHorizontalBox(),Box.createHorizontalBox(),Box.createHorizontalBox()};
         Box miniVBox = Box.createVerticalBox();
         for(int i=0;i<miniHBox.length;i++)
@@ -203,10 +229,14 @@ public class MainPanel extends JPanel  implements ActionListener {
         }
 
         hBox[4].add(miniVBox);
+        hBox[4].add(Box.createHorizontalGlue());
         hBox[5].add(bt_ok);
         hBox[5].add(bt_exit);
         hBox[5].add(bt_viewHistory);
         BigBox.add(label_welcome);
+        BigBox.add(accountBox);
+        BigBox.add(bt_id);
+        BigBox.add(Box.createVerticalStrut(50));
         BigBox.add(label_cfg);
         for(int i=0;i<hBox.length;i++)
             BigBox.add(hBox[i]);
@@ -275,7 +305,7 @@ public class MainPanel extends JPanel  implements ActionListener {
         JPanel panel = new JPanel();
         try {
             // create a reader instance
-            BufferedReader br = new BufferedReader(new FileReader("record.txt"));
+            BufferedReader br = new BufferedReader(new FileReader(ID +"_record.txt"));
 
             // read until end of file
             String line;
@@ -286,7 +316,7 @@ public class MainPanel extends JPanel  implements ActionListener {
             // close the reader
             br.close();
         } catch (IOException ex) {
-            throw new MyException("历史记录文件读取失败");
+            throw new MyException("您还是新用户，还有没训练记录哟");
         }
      // 添加组件到面板
         panel.add(textArea);

@@ -10,7 +10,6 @@ public class Generate_Calculations {
     private final int  range;                 //运算数的范围，如10以下
     private final boolean isFractionAllowed;  //是否允许小数
     private final int OperandsNum;            //运算数个数
-    //private final int type;                   //题目类型，1表示填空题，2表示选择题，3表示判断题
     private final int Num;
     private final boolean isParenthesesAllowed;//是否允许括号;
     private static final char[] Operator = {'+','-','*','/','(',')'};
@@ -69,7 +68,7 @@ public class Generate_Calculations {
         {
             calculation +=Operands[i].toString();
             if(i!=OperandsNum-1) {
-                int idx = r.nextInt(3);
+                int idx = r.nextInt(4);
                 calculation += Operator[idx];
             }
         }

@@ -6,9 +6,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 
 public class FillBlank_Questions  implements DocumentListener {
@@ -23,11 +21,12 @@ public class FillBlank_Questions  implements DocumentListener {
 
     public FillBlank_Questions(String question){            //构造方法，只需从外部传进一个算式，即可计算出算式的所有信息，两个子类的构造方法也会调用这个方法
         this.question = question;
-        this.answer = Compute.DoubleToInteger(Compute.final_compute(question));
+        this.answer = Compute.DoubleToInteger(Compute.compute(question));
+        this.answer = Compute.ToOneDecimal(this.answer);
         tf_question = new JTextField();
         setText();
         tf_question.setEditable(false);
-        tf_question.setColumns(35);
+        tf_question.setColumns(50);
         //tf_question.setSize(300,30);
 
         tf_response = new JTextField();
@@ -37,6 +36,7 @@ public class FillBlank_Questions  implements DocumentListener {
         hBox = Box.createHorizontalBox();           //将两个文本框添加到容器中
         hBox.add(tf_question);
         hBox.add(tf_response);
+        hBox.add(Box.createHorizontalGlue());
     }
     public void setResponse(String response){
         this.response = response;

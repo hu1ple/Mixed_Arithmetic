@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.BufferedWriter;
@@ -33,7 +32,7 @@ public class Choice_Questions extends FillBlank_Questions implements ItemListene
     private void generate_Options(){
         Random r = new Random();
         str_options = new String[4];
-        String Sres = Compute.final_compute(question);
+        String Sres = Compute.ToOneDecimal(Compute.compute(question));
         Double Dres = Double.parseDouble(Sres);
         str_options[0] = Compute.DoubleToInteger(String.valueOf(Dres-1));
         str_options[1] = Compute.DoubleToInteger(String.valueOf(Dres+1));

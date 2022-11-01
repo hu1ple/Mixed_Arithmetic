@@ -46,6 +46,8 @@ public class Compute {
 
     }
 
+
+    //中缀转后缀，getItem取元素
     static void InfixToPostfix(String infix) {
         curpos = 0;
         postfix = "";
@@ -65,7 +67,7 @@ public class Compute {
                     do {
                         ch = S.pop();
                         if(ch == '#')
-                        {}//throw new MyException(" 括号不对称！！");
+                        {}
                         if(ch!= '(')
                         {
                             postfix+= ch;
@@ -102,6 +104,8 @@ public class Compute {
         }
 
     }
+
+    //运算，若后缀表达式取出的是操作符， 则调用这个函数，即先从栈中取出连个
     static void DoOperator(char oper) {
         double oper1 , oper2;
 
@@ -129,6 +133,7 @@ public class Compute {
 
 
     }
+    //后缀表达式计算，
     static double Caculating(String post)
     {
         while(stack.size()!=0)
@@ -155,6 +160,16 @@ public class Compute {
         return stack.pop();
 
     }
+
+
+    public static String compute(String s){
+
+
+        InfixToPostfix(s);
+        double b = Caculating(postfix);      //b 为十进制答案
+        return "" + b;
+
+    }
     public static boolean isEqual(String a, String b){
         if(MainPanel.isNumeric(a) && MainPanel.isNumeric(b)) {
             double da = Double.parseDouble(a), db = Double.parseDouble(b);
@@ -172,21 +187,17 @@ public class Compute {
         double eps = 1e-10;  // 精度范围
         return obj-Math.floor(obj) < eps;
     }
-    public static String final_compute(String s){
 
-
-            InfixToPostfix(s);
-
-            double b = Caculating(postfix);      //b 为十进制答案
-            return "" + b;
-
-    }
-    public static String DoubleToInteger(String s){
+    public static String DoubleToInteger(String s){         //判断s的小数部分是不是0， 如果是0，则将s的小数去掉，变成整数
         double tmp = Double.parseDouble(s);
         if(isIntegerForDouble(tmp))
             return Integer.toString((int)tmp);
         else
             return s;
 
+    }
+    public static String ToOneDecimal(String s){
+        double tmp = Double.parseDouble(s);
+        return String.format("%.2f",tmp);
     }
 }

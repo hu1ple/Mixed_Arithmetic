@@ -33,7 +33,8 @@ public class TorF_Questions extends FillBlank_Questions implements ItemListener 
         tf_question.setText("判断题：" + question + "=" + judgingObject);
     }
     private void generateJudgingObject(){
-        String Sres = Compute.final_compute(question);
+        String Sres = Compute.compute(question);
+        Sres = Compute.ToOneDecimal(Sres);
         double Dres = Double.parseDouble(Sres);
         String fake_answer = Compute.DoubleToInteger(String.valueOf(Dres+10)); //产生一个比正确答案大10 的结果；
         Random r = new Random();
