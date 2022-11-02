@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class TorF_Questions extends FillBlank_Questions implements ItemListener {
     private String judgingObject;
-    private JRadioButton[] radioBt_TorF;
+    private final JRadioButton[] radioBt_TorF;
 
     public TorF_Questions(String question) {
 
@@ -22,10 +22,10 @@ public class TorF_Questions extends FillBlank_Questions implements ItemListener 
         tf_question.setColumns(35);
         tf_response.setColumns(5);
         ButtonGroup buttonGroup = new ButtonGroup();
-        for(int i=0;i<radioBt_TorF.length;i++) {
-            buttonGroup.add(radioBt_TorF[i]);
-            this.hBox.add(radioBt_TorF[i]);
-            radioBt_TorF[i].addItemListener(this);
+        for (JRadioButton jRadioButton : radioBt_TorF) {
+            buttonGroup.add(jRadioButton);
+            this.hBox.add(jRadioButton);
+            jRadioButton.addItemListener(this);
         }
 
     }
@@ -56,10 +56,8 @@ public class TorF_Questions extends FillBlank_Questions implements ItemListener 
            // this.response = "T";
             this.tf_response.setText("T");
         }
-        else if(e.getSource() == radioBt_TorF[1]){
-            //this.response ="F";
-            this.tf_response.setText("F");
-        }
+        else //this.response ="F";
+            if(e.getSource() == radioBt_TorF[1]) this.tf_response.setText("F");
     }
     public void OutputToFile(String filename) throws MyException{
         try{

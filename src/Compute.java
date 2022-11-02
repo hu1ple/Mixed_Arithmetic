@@ -7,7 +7,7 @@ public class Compute {
     static Stack<Double> stack =new Stack<>();     //栈，中缀计算时用
     public static int getItem(String fix) {
         item = "";
-        int i=0,k = curpos, flag;          //flag 标记取出的是操作符还是数字 ，数字标记成0，否则1
+        int k = curpos, flag;          //flag 标记取出的是操作符还是数字 ，数字标记成0，否则1
         if (fix.charAt(k) == '.')
             flag = -1;
         else if (fix.charAt(k) >= '0' && fix.charAt(k) <= '9') {
@@ -170,7 +170,7 @@ public class Compute {
         return "" + b;
 
     }
-    public static boolean isEqual(String a, String b){
+    public static boolean isEqual(String a, String b){                          //判断两个String类型的数是否相等
         if(MainPanel.isNumeric(a) && MainPanel.isNumeric(b)) {
             double da = Double.parseDouble(a), db = Double.parseDouble(b);
             if (Math.abs(da - db) < 0.001)
@@ -196,8 +196,10 @@ public class Compute {
             return s;
 
     }
-    public static String ToOneDecimal(String s){
+    public static String ToOneDecimal(String s){        //为了避免结果是无限小数，将结果保留两位小数
         double tmp = Double.parseDouble(s);
-        return String.format("%.2f",tmp);
+        if(s.length()>10)
+            return String.format("%.2f",tmp);
+        else return s;
     }
 }

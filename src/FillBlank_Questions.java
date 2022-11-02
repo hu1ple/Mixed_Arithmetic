@@ -15,7 +15,6 @@ public class FillBlank_Questions  implements DocumentListener {
     protected String response;          //用户的作答
     protected boolean isCorrect;        //记录用户作答是否正确，通过将answer和response比较得到
     protected Box hBox;                 //一个水平箱容器，里面放置了多个文本框，将此容器添加到AnswerPanel中即可实现一道题目的显示
-    protected Box resultBox;            //显示作答结果的容器，当用户点击提交按钮后会显示出来，包括了一个label显示作答正确与否，一个文本框显示正确答案
     protected JTextField tf_question;   //两个文本框，分别用来显示题干和用户作答区域
     protected JTextField tf_response;
 
@@ -38,19 +37,15 @@ public class FillBlank_Questions  implements DocumentListener {
         hBox.add(tf_response);
         hBox.add(Box.createHorizontalGlue());
     }
+    /*
     public void setResponse(String response){
         this.response = response;
-        if(Math.abs(Double.parseDouble(answer)-Double.parseDouble(response))<0.0001)
-            isCorrect = true;
-        else
-            isCorrect = false;
-    }
+        isCorrect = Math.abs(Double.parseDouble(answer) - Double.parseDouble(response)) < 0.0001;
+    }*/
     public void setText(){              //设置题目文本框的内容，介于三种题型的格式不是统一的，所以我利用多态性，在子类中重写该方法。
         tf_question.setText("填空题："+question +"=");
     }
-    public boolean getIsCorrect(){
-        return isCorrect;
-    }
+
     public Box gethBox(){           //返回该题目的水平箱容器
         return this.hBox;
     }
@@ -93,8 +88,7 @@ public class FillBlank_Questions  implements DocumentListener {
 
     @Override
     public void insertUpdate(DocumentEvent e) {    //重写监听器，捕捉作答文本框的改变，同步更新response和isCorrect
-        String text = tf_response.getText();
-        response = text;
+        response = tf_response.getText();
         if(Compute.isEqual(response,answer))
             isCorrect = true;
         /*if(text.length() == 1){

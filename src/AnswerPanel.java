@@ -8,25 +8,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class AnswerPanel  extends JPanel implements ActionListener {
-    private SystemFrame systemFrame;
-    private FillBlank_Questions[] Questions;
+    private final SystemFrame systemFrame;
+    private final FillBlank_Questions[] Questions;
     private int NumOfCorrect;
     private int score;
-    private String ID;
-    private Box VBox;
-    private JButton bt_ok;
-    private JButton bt_back;
-    private JButton bt_showNext;
-    private JButton bt_showLast;
-    private JButton bt_outputTofile;
+    private final String ID;
     private int index;
 
 
     public AnswerPanel(int range, int OperandsNum, boolean isFractionAllowed,
-                       boolean isParenthesesAllowed, int type[], SystemFrame systemFrame,String ID) {
+                       boolean isParenthesesAllowed, int[] type, SystemFrame systemFrame, String ID) {
         this.ID = ID;
         this.systemFrame = systemFrame;                         //初始化题目设置
-        this.VBox = Box.createVerticalBox();
+        Box VBox = Box.createVerticalBox();
         index = -1;
         Generate_Calculations[] grt_calctions = new Generate_Calculations[]{
                 new Generate_Calculations(range, isFractionAllowed, OperandsNum, isParenthesesAllowed, type[0]),
@@ -42,7 +36,7 @@ public class AnswerPanel  extends JPanel implements ActionListener {
             for (int i = 0; i < type[0]; i++) {
                 Questions[i] = new FillBlank_Questions(calculations[0][i]);
                 Questions[i].gethBox().setVisible(false);
-                this.VBox.add(Questions[i].gethBox());
+                VBox.add(Questions[i].gethBox());
 
             }
         }
@@ -50,7 +44,7 @@ public class AnswerPanel  extends JPanel implements ActionListener {
             for (int i = 0; i < type[1]; i++) {
                 Questions[type[0] + i] = new TorF_Questions(calculations[1][i]);
                 Questions[i].gethBox().setVisible(false);
-                this.VBox.add(Questions[i+type[0]].gethBox());
+                VBox.add(Questions[i+type[0]].gethBox());
 
             }
         }
@@ -58,40 +52,39 @@ public class AnswerPanel  extends JPanel implements ActionListener {
             for (int i = 0; i < type[2]; i++) {
                 Questions[i + type[0] + type[1]] = new Choice_Questions(calculations[2][i]);
                 Questions[i].gethBox().setVisible(false);
-                this.VBox.add(Questions[i+type[0] + type[1]].gethBox());
+                VBox.add(Questions[i+type[0] + type[1]].gethBox());
 
             }
         }
 
 
-        bt_back = new JButton("返回");                    //添加返回按钮
+        JButton bt_back = new JButton("返回");                    //添加返回按钮
         bt_back.addActionListener(this);
         bt_back.setActionCommand("back");
-        bt_ok = new JButton("提交");
+        JButton bt_ok = new JButton("提交");
         bt_ok.addActionListener(this);
         bt_ok.setActionCommand("ok");
-        bt_showLast = new JButton("查看上一组");
+        JButton bt_showLast = new JButton("查看上一组");
         bt_showLast.addActionListener(this);
         bt_showLast.setActionCommand("last");
-        bt_showNext = new JButton("查看下一组");
+        JButton bt_showNext = new JButton("查看下一组");
         bt_showNext.addActionListener(this);
         bt_showNext.setActionCommand("next");
-        bt_outputTofile = new JButton("保存结果到文件");
+        JButton bt_outputTofile = new JButton("保存结果到文件");
         bt_outputTofile.addActionListener(this);
         bt_outputTofile.setActionCommand("file");
 
 
-        this.VBox.add(bt_ok);
-        this.VBox.add(bt_back);
-        this.VBox.add(bt_showLast);
-        this.VBox.add(bt_showNext);
-        this.VBox.add(bt_outputTofile);
+        VBox.add(bt_ok);
+        VBox.add(bt_back);
+        VBox.add(bt_showLast);
+        VBox.add(bt_showNext);
+        VBox.add(bt_outputTofile);
         this.add(VBox);
 
         try {
             showNextGroup();
             refresh();
-            int a =0;
         } catch (MyException e) {
             e.printStackTrace();
         }
@@ -114,12 +107,6 @@ public class AnswerPanel  extends JPanel implements ActionListener {
             }
             index = i-1;
             refresh();
-            //this.VBox.add(bt_ok);
-            //this.VBox.add(bt_back);
-            //this.VBox.add(bt_showLast);
-            //this.VBox.add(bt_showNext);
-            //this.add(VBox);
-            //this.setVisible(true);
 
         }
 
@@ -131,8 +118,6 @@ public class AnswerPanel  extends JPanel implements ActionListener {
         else {
             for(int i = index -index %10;i<=index && index>=0;i++)
                 Questions[i].gethBox().setVisible(false);
-            //this.removeAll();
-           // this.setVisible(false);
             int i;
             for (i = index - index % 10 - 10; i < index - index % 10; i++) {
                 Questions[i].gethBox().setVisible(true);
@@ -160,14 +145,13 @@ public class AnswerPanel  extends JPanel implements ActionListener {
                 showResultDialog("请不要重复提交!");
                 return ;
             }
-            NumOfCorrect = 0;
-            for (int i = 0; i < Questions.length; i++) {
-                Questions[i].ShowResult();
-                if(Questions[i].isCorrect)  NumOfCorrect++;
+            for (FillBlank_Questions question : Questions) {
+                question.ShowResult();
+                if (question.isCorrect) NumOfCorrect++;
             }
-            String Analysis ="本次训练共"+Integer.toString(Questions.length)+"道题\n"+
-                    "你共做对了"+Integer.toString(NumOfCorrect)+"道题\n"+
-                    "你的得分为:"+Integer.toString(100*NumOfCorrect/Questions.length);
+            String Analysis ="本次训练共"+ Questions.length +"道题\n"+
+                    "你共做对了"+ NumOfCorrect +"道题\n"+
+                    "你的得分为:"+ 100 * NumOfCorrect / Questions.length;
             showResultDialog(Analysis);
             refresh();
         } else if (e.getActionCommand().equals("next")) {
@@ -194,19 +178,18 @@ public class AnswerPanel  extends JPanel implements ActionListener {
                 Date date = new Date(System.currentTimeMillis());
 
                 SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
-                String time = String.valueOf(formatter.format(date));
+                String time = formatter.format(date);
                 FileWriter fileWriter = new FileWriter(ID+"_Exercises.txt",true);
                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
                 bufferedWriter.write("\n\n*********************新的一轮训练开始:"+time+"*************"+"\n");
                 bufferedWriter.close();
                 fileWriter.close();
-                for(int i=0;i< Questions.length;i++)
-                    Questions[i].OutputToFile(ID+"_Exercises.txt");
+                for (FillBlank_Questions question : Questions) question.OutputToFile(ID + "_Exercises.txt");
                 fileWriter = new FileWriter(ID+"_Exercises.txt",true);
                 bufferedWriter = new BufferedWriter(fileWriter);
-                String Analysis = "本次训练共"+Integer.toString(Questions.length) +"道题\n"
-                                +"您共答对了"+Integer.toString(NumOfCorrect)+"道题\n"
-                                +"您的最终得分为:"+Integer.toString(100*NumOfCorrect/Questions.length)+"\n";
+                String Analysis = "本次训练共"+ Questions.length +"道题\n"
+                                +"您共答对了"+ NumOfCorrect +"道题\n"
+                                +"您的最终得分为:"+ 100 * NumOfCorrect / Questions.length +"\n";
 
                 bufferedWriter.write(Analysis);
                 bufferedWriter.write("*********************本轮训练结束*********************\n");
@@ -215,7 +198,7 @@ public class AnswerPanel  extends JPanel implements ActionListener {
 
                 fileWriter =new FileWriter(ID+"_record.txt",true);
                 bufferedWriter=new BufferedWriter(fileWriter);
-                bufferedWriter.write(time+":"+Integer.toString(100*NumOfCorrect/Questions.length)+"\n");
+                bufferedWriter.write(time+":"+ 100 * NumOfCorrect / Questions.length +"\n");
                 bufferedWriter.close();
                 fileWriter.close();
                 showResultDialog("训练记录保存成功！");
@@ -237,9 +220,6 @@ public class AnswerPanel  extends JPanel implements ActionListener {
         dialog.setResizable(false);
         // 设置对话框相对显示的位置
         dialog.setLocationRelativeTo(systemFrame);
-
-        // 创建一个标签显示消息内容
-        //JLabel messageLabel = new JLabel(message);
         JTextArea textArea = new JTextArea(message);
         textArea.setEditable(false);
         // 创建一个按钮用于关闭对话框

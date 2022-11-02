@@ -1,7 +1,7 @@
 import javax.swing.*;
 
 public class SystemFrame extends JFrame {                       //自定义窗口类，继承自JFrame，主要有两个成员变量：
-    private MainPanel mainPanel;                                //mainPanel为主面板，用户在此进行训练设置
+    private final MainPanel mainPanel;                                //mainPanel为主面板，用户在此进行训练设置
     private AnswerPanel answerPanel;                            //answerPanel为作答面板，用户在此进行作答
     //通过设置这两个paanel的属性，来实现界面切换，具体见MainPanel、AnswerPanel类中的对actionPerformed方法的重写
 
@@ -23,8 +23,8 @@ public class SystemFrame extends JFrame {                       //自定义窗�
     public AnswerPanel getAnswerPanel() {
         return answerPanel;
     }
-    public void setAnswerPanel(int range ,int OperandsNum, boolean isFractionAllowed,       //当用户在mainPanel中点击确认按钮时，调用此方法，将
-                              boolean isParenthesesAllowed,int type[],String ID  ){                   //用户的训练设置参数传进来，并初始化answerPanel。
+    public void setAnswerPanel(int range , int OperandsNum, boolean isFractionAllowed,       //当用户在mainPanel中点击确认按钮时，调用此方法，将
+                               boolean isParenthesesAllowed, int[] type, String ID  ){                   //用户的训练设置参数传进来，并初始化answerPanel。
         answerPanel = new AnswerPanel(range ,OperandsNum,isFractionAllowed,
                                         isParenthesesAllowed,type,this,ID);
         this.add(answerPanel);

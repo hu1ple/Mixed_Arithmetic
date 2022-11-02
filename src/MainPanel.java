@@ -3,25 +3,24 @@ import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Enumeration;
 
 public class MainPanel extends JPanel  implements ActionListener {
     private JLabel label_welcome;
     private JLabel label_cfg;
     private JLabel[] labels ;
-    private JLabel label_id;
-    private JTextField tf_id;
+    private JLabel label_id;            //label 提示用户名输入
+    private JTextField tf_id;            //用于接收用户名的输入框
+    private JLabel label_pw;
+    private JTextField tf_pw;
     private JButton bt_id;
     private JRadioButton[] radioBt_range;//选择运算范围
     private JRadioButton[] radioBt_Fraction;//是否带小数
     private JRadioButton[] radioBt_Parentheses;//是否带括号单选框
     private JRadioButton[] radioBt_OperandsNum;//选择运算数个数
-    private ButtonGroup[] buttonGroups; //上述四个单选框组
     private JCheckBox[] checkBox_type;  //复选框，分别确定每个题型是否选择
-    private SystemFrame systemFrame;    //窗口
+    private final SystemFrame systemFrame;    //窗口
     private JButton bt_ok;              //确定按钮，点击后进入答题界面
     private JButton bt_exit;            //退出按钮，点击后关闭软件
     private JButton bt_viewHistory;
@@ -29,7 +28,7 @@ public class MainPanel extends JPanel  implements ActionListener {
     private int range;
     private boolean isFractionAllowed;  //是否允许小数
     private int OperandsNum = 0;            //运算数个数
-    private int type[];                   //题目类型，1表示填空题，2表示选择题，3表示判断题
+    private int[] type;                   //题目类型，1表示填空题，2表示选择题，3表示判断题
     private boolean isParenthesesAllowed;//是否允许括号;
     private String ID ="";
 
@@ -64,23 +63,74 @@ public class MainPanel extends JPanel  implements ActionListener {
                 ex.printStackTrace();
             }
         }
-        else if(e.getActionCommand().equals("EXIT")){
-
+        else if(e.getActionCommand().equals("EXIT")){               //点击退出按钮，关闭程序
+            System.exit(0);
         }
-        else if(e.getActionCommand().equals("VIEW")){
+        else if(e.getActionCommand().equals("VIEW")){               //点击查看历史记录按钮，查看历史记录
             try {
                 showHistoryDialog();
             } catch (MyException ex) {
                 showWarningDialog(ex.getMessage());
             }
         }
-        else if(e.getActionCommand().equals("ID")){
-            String getID = tf_id.getText();
+        else if(e.getActionCommand().equals("ID")){                //点击登录按钮，进入登录逻辑
+            String getID = tf_id.getText();                         //获得账号，密码
+            String getPW = tf_pw.getText();
             if(getID.equals("") )
                 showWarningDialog("用户名不能为空");
             else {
+                File file=new File("account.txt");         //创建account文件，存储账号和密码
+                if(!file.exists())
+                {
+                    try {
+                        file.createNewFile();
+                    } catch (IOException ex) {
+                        // TODO Auto-generated catch block
+                        showWarningDialog("创建账户文件accont.txt失败");
+                    }
+                }
+                FileReader fileReader;                   //读取account中的文件，比对账号和密码
+                try {
+                    fileReader = new FileReader("account.txt");
+                    BufferedReader br = new BufferedReader(fileReader);
+                    String line,password = null;
+                    boolean flag = false;
+                    while ((line = br.readLine()) != null) {
+                       String[] str = line.split(" ");          //将每行的信息拆分成账号和密码
+                       if(str[0].equals(getID)) {
+                           flag = true;
+                           password = str[1];
+                           break;
+                       }
+                    }
+                    br.close();
+                    fileReader.close();
+
+                    if(!flag){                                  //如果用户不存在，则创建该用户，即向文件中写入信息
+                        showWarningDialog("用户名不存在，已为您自动注册！");
+                        FileWriter fileWriter = new FileWriter("account.txt",true);
+                        BufferedWriter bw = new BufferedWriter(fileWriter);
+                        bw.write(getID+" "+getPW+"\n");
+                        bw.close();
+                        fileWriter.close();
+                    }
+                    else{
+                        if(password.equals(getPW))              //如果账号存在且密码真确，则登录成功
+                        {
+                            ID = getID;
+                            showWarningDialog("欢迎您，"+ ID +"\n");
+                        }
+                        else                                    //密码不正确，提示输入错误
+                            showWarningDialog("密码输入错误!");
+                    }
+                } catch (IOException ex) {
+                    showWarningDialog("读取账号库文件失败");
+                }
+
+
+
                 ID = getID;
-                showWarningDialog("欢迎您，"+ ID +"\n");
+
             }
         }
     }
@@ -94,15 +144,11 @@ public class MainPanel extends JPanel  implements ActionListener {
         else
             range = 1000;
 
-        if(radioBt_Fraction[0].isSelected())            //根据选择是否带小数，设置isFractionAllowed的值
-            isFractionAllowed = false;
-        else
-            isFractionAllowed = true;
+        //根据选择是否带小数，设置isFractionAllowed的值
+        isFractionAllowed = !radioBt_Fraction[0].isSelected();
 
-        if(radioBt_Parentheses[0].isSelected())         //根据选择是否带括号，设置isParenthesesAllowed的值
-            isParenthesesAllowed = false;
-        else
-            isParenthesesAllowed = true;
+        //根据选择是否带括号，设置isParenthesesAllowed的值
+        isParenthesesAllowed = !radioBt_Parentheses[0].isSelected();
 
         boolean flag = false;                           //标记是否三种题型的数量都为0
         type = new int[3];
@@ -131,7 +177,7 @@ public class MainPanel extends JPanel  implements ActionListener {
 
 
     }
-    private void InitAllComponents(){
+    private void InitAllComponents(){               //初始化面板中的所有部件
 
         Font f1 = new Font("宋体",Font.PLAIN,20);
         InitGlobalFont(f1);
@@ -139,6 +185,8 @@ public class MainPanel extends JPanel  implements ActionListener {
 
         label_id = new JLabel("用户名:");
         tf_id = new JTextField(20);
+        label_pw = new JLabel("密码  :");
+        tf_pw = new JTextField(20);
         bt_id = new JButton("登录");
         this.label_welcome = new JLabel("欢迎使用混合运算自测系统");
         label_welcome.setFont(f2);
@@ -182,13 +230,15 @@ public class MainPanel extends JPanel  implements ActionListener {
         };
         //for(int i=0;i<editNum.length;i++)
           //  editNum[i].set
-        this.buttonGroups = new ButtonGroup[]{
-                new ButtonGroup(), new ButtonGroup(),new ButtonGroup(),new ButtonGroup()
+        //上述四个单选框组
+        ButtonGroup[] buttonGroups = new ButtonGroup[]{
+                new ButtonGroup(), new ButtonGroup(), new ButtonGroup(), new ButtonGroup()
         };
-        for(int i=0;i<radioBt_range.length;i++)         buttonGroups[0].add(radioBt_range[i]);
-        for(int i=0;i<radioBt_OperandsNum.length;i++)   buttonGroups[1].add(radioBt_OperandsNum[i]);
-        for(int i=0;i<radioBt_Fraction.length;i++)      buttonGroups[2].add(radioBt_Fraction[i]);
-        for(int i=0;i<radioBt_Parentheses.length;i++)   buttonGroups[3].add(radioBt_Parentheses[i]);
+        //将单选按钮加入到各自的Group中
+        for (JRadioButton jRadioButton : radioBt_range) buttonGroups[0].add(jRadioButton);
+        for (JRadioButton jRadioButton : radioBt_OperandsNum) buttonGroups[1].add(jRadioButton);
+        for (JRadioButton jRadioButton : radioBt_Fraction) buttonGroups[2].add(jRadioButton);
+        for (JRadioButton radioBt_parenthesis : radioBt_Parentheses) buttonGroups[3].add(radioBt_parenthesis);
         bt_ok = new JButton("确定");bt_exit =new JButton("退出");bt_viewHistory = new JButton("查看历史记录");
         addToBoxLayout();               //将所有部件添加到箱式布局中
 
@@ -203,46 +253,49 @@ public class MainPanel extends JPanel  implements ActionListener {
                 Box.createHorizontalBox(),Box.createHorizontalBox(),Box.createHorizontalBox(),
                 Box.createHorizontalBox(),Box.createHorizontalBox(),Box.createHorizontalBox()
         };
-
+        //将用户名label和textfield放到水平箱中
         Box accountBox  = Box.createHorizontalBox();
         accountBox.add(label_id);accountBox.add(tf_id);accountBox.add(Box.createHorizontalStrut(80));
+        //将密码label和textfield放到水平箱中
+        Box passwordBox = Box.createHorizontalBox();
+        passwordBox.add(label_pw);passwordBox.add(tf_pw);passwordBox.add(Box.createHorizontalStrut(80));
+        //将其余部分添加到各自的水平箱中
         for(int i=0;i<labels.length;i++){
             hBox[i].add(labels[i]);
         }
-        for(int i=0;i<radioBt_range.length;i++)
-                hBox[0].add(radioBt_range[i]);
-        for(int i=0;i<radioBt_OperandsNum.length;i++)
-                hBox[1].add(radioBt_OperandsNum[i]);
-        for(int i=0;i<radioBt_Fraction.length;i++)
-                hBox[2].add(radioBt_Fraction[i]);
-        for(int i=0;i<radioBt_Parentheses.length;i++)
-                hBox[3].add(radioBt_Parentheses[i]);
+        for (JRadioButton jRadioButton : radioBt_range) hBox[0].add(jRadioButton);
+        for (JRadioButton jRadioButton : radioBt_OperandsNum) hBox[1].add(jRadioButton);
+        for (JRadioButton jRadioButton : radioBt_Fraction) hBox[2].add(jRadioButton);
+        for (JRadioButton radioBt_parenthesis : radioBt_Parentheses) hBox[3].add(radioBt_parenthesis);
         for(int i=0;i<4;i++)
                 hBox[i].add(Box.createHorizontalGlue());
+        //将题型和其对应的题量输入框添加到一个小的水平箱中
         Box[] miniHBox = new Box[]{Box.createHorizontalBox(),Box.createHorizontalBox(),Box.createHorizontalBox()};
         Box miniVBox = Box.createVerticalBox();
+        //将三个小水平箱放到一个垂直箱中
         for(int i=0;i<miniHBox.length;i++)
         {
             miniHBox[i].add(checkBox_type[i]);
             miniHBox[i].add(editNum[i]);
             miniVBox.add(miniHBox[i]);
         }
-
+        //将垂直箱放到hBox中
         hBox[4].add(miniVBox);
         hBox[4].add(Box.createHorizontalGlue());
         hBox[5].add(bt_ok);
         hBox[5].add(bt_exit);
         hBox[5].add(bt_viewHistory);
+        //将所有部件和水平箱放到最终的大垂直箱中
         BigBox.add(label_welcome);
         BigBox.add(accountBox);
+        BigBox.add(passwordBox);
         BigBox.add(bt_id);
         BigBox.add(Box.createVerticalStrut(50));
         BigBox.add(label_cfg);
-        for(int i=0;i<hBox.length;i++)
-            BigBox.add(hBox[i]);
+        for (Box box : hBox) BigBox.add(box);
         this.add(BigBox);
     }
-    private void InitGlobalFont(Font font) {
+    private void InitGlobalFont(Font font) {                    //这个用来设置部件的全局字体
         FontUIResource fontRes = new FontUIResource(font);
         for (Enumeration<Object> keys = UIManager.getDefaults().keys(); keys.hasMoreElements();) {
             Object key = keys.nextElement();
@@ -252,7 +305,7 @@ public class MainPanel extends JPanel  implements ActionListener {
             }
         }
     }
-    private void showWarningDialog(String message){
+    private void showWarningDialog(String message){                         //弹出一个对话框
         final JDialog dialog = new JDialog(systemFrame, "警告", true);
         // 设置对话框的宽高
         dialog.setSize(300, 150);
@@ -286,7 +339,7 @@ public class MainPanel extends JPanel  implements ActionListener {
         dialog.setVisible(true);
 
     }
-    private void showHistoryDialog() throws MyException{
+    private void showHistoryDialog() throws MyException{                    //弹出对话框，展示该用户的所有得分记录
         final JDialog dialog = new JDialog(systemFrame, "历史成绩", true);
         // 设置对话框的宽高
         dialog.setSize(300, 300);
@@ -326,7 +379,7 @@ public class MainPanel extends JPanel  implements ActionListener {
         // 显示对话框
         dialog.setVisible(true);
     }
-    public static boolean isNumeric(String str){
+    public static boolean isNumeric(String str){                //判断一个String型变量是否是纯数字，用于判断题量输入是否合法
 
         if(str .equals("") )
             return false;
